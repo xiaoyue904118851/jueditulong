@@ -211,7 +211,6 @@ function util.newRichLabel(size,space)
 	richWidget:addChild(richlabel)
 	return richlabel,richWidget
 end
-
 function util.setRichLabel(richlabel,htmltext,parent,tsize,decolor)
 --    C++没有这个方法 暂时屏蔽
 --	richlabel:removeAllElement()
@@ -245,223 +244,277 @@ function util.setRichLabel(richlabel,htmltext,parent,tsize,decolor)
 	local Dsize=msize
 	local Tcolor = {[1]=mcolor}
 	local Tsize = {[1]=msize}
-	local html_ = htmlParse.parsestr(htmltext)
-	-- print("htmltext == ",html_[2])
-	dump(html_)
-		-- if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
-			local function linktouch(pSender)
-				util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
-			end
-			local tempStr=htmltext
-            local labelStr = tempStr
-            local attr = string.split(tempStr, ",")
-            if attr and attr[2] then
-                local itemdef = NetClient:getItemDefByID(checkint(attr[2]))
-                if itemdef then
-                    labelStr = "["..itemdef.mName.."]"
-                end
-            end
-
-			local label = util.newUILabel({
-				text = labelStr,
-				fontSize = Tsize[#Tsize]+2,
-				anchor = cc.p(1,0.5),
-				color = cc.c3b(0,255,0),
-				position = cc.p(320,110),
-			})
-			label:setLocalZOrder(10)
-			label:setTouchEnabled(true)
---					label.user_data="event:local_itemname_"..tempStr
-            label.user_data="event:itemshow_"..tempStr
-			label:addClickEventListener(linktouch)
-			local element=ccui.RichElementCustomNode:create(index,Const.COLOR_GREEN_1_C3B,255,label)
-			richlabel:pushBackElement(element)
-			-- index=index+1
-		-- end
+	print(htmltext)
 	for i=0,parser:getHtmlNodeCount()-1 do
-		print('i == ',i)
--- 		local pNode=parser:getHtmlNode(i)
+		local pNode=parser:getHtmlNode(i)
+		print("pNode:getType() == ",pNode:getType())
+		if pNode:getType()==NODE_TYPE.NODE_START_TAG then
+			print("pNode:getTagType() == ",pNode:getTagType())
+			if pNode:getTagType()~=TAG_TYPE.TAG_BR then
+				brCount=0
+			end
 
--- 		if pNode:getType()==NODE_TYPE.NODE_START_TAG then
+			if pNode:getTagType()==TAG_TYPE.TAG_FONT then
 
--- 			if pNode:getTagType()~=TAG_TYPE.TAG_BR then
--- 				brCount=0
--- 			end
+				local tempcolor=cc.HtmlParser:getAttributeStringValue(pNode,"color","ffffff")
+				table.insert(Tcolor,"0x"..string.sub(tempcolor,2))
 
--- 			if pNode:getTagType()==TAG_TYPE.TAG_FONT then
+				local tempsize=cc.HtmlParser:getAttributeIntValue(pNode,"size",msize)
+				table.insert(Tsize,tempsize)
 
--- 				local tempcolor=cc.HtmlParser:getAttributeStringValue(pNode,"color","ffffff")
--- 				table.insert(Tcolor,"0x"..string.sub(tempcolor,2))
+			elseif pNode:getTagType()==TAG_TYPE.TAG_BR then
 
--- 				local tempsize=cc.HtmlParser:getAttributeIntValue(pNode,"size",msize)
--- 				table.insert(Tsize,tempsize)
+				brCount = brCount + 1
+				local height = 0
+				if brCount >1 and parent ~= "panel_npctalk" then
+--					height = 10
+				end
+				local ccnode=cc.Node:create()
+				ccnode:setContentSize(cc.size(richlabel:getCustomSize().width,height))
+				local element=ccui.RichElementCustomNode:create(index,display.COLOR_WHITE,255,ccnode)
+				richlabel:pushBackElement(element)
+				index=index+1
+			elseif pNode:getTagType()==TAG_TYPE.TAG_PIC then
+				local picfile = cc.HtmlParser:getAttributeStringValue(pNode,"src")
+				if picfile and tostring(picfile)~="" then
+					local sprite=cc.Sprite:create()
+					sprite:setSpriteFrame(tostring(picfile))
+					if sprite then
+						local element=ccui.RichElementCustomNode:create(index,cc.c3b(255,255,255),0,sprite)
+						richlabel:pushBackElement(element)
+						index=index+1
+					end
+				end
+			elseif pNode:getTagType()==TAG_TYPE.TAG_P then
 
--- 			elseif pNode:getTagType()==TAG_TYPE.TAG_BR then
+				brCount = brCount + 1
+				local height = 0
+				if brCount >1 then
+					height = 20
+				end
+				tag_a=true
+				local ccnode = parser:getHtmlNode(i+1)
+				if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
+					local function linktouch(pSender)
+						util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
+					end
+					local tempStr=ccnode:getText()
+                    local labelStr = tempStr
+                    local attr = string.split(tempStr, ",")
+                    if attr and attr[2] then
+                        local itemdef = NetClient:getItemDefByID(checkint(attr[2]))
+                        if itemdef then
+                            labelStr = "["..itemdef.mName.."]"
+                        end
+                    end
 
--- 				brCount = brCount + 1
--- 				local height = 0
--- 				if brCount >1 and parent ~= "panel_npctalk" then
--- --					height = 10
--- 				end
--- 				local ccnode=cc.Node:create()
--- 				ccnode:setContentSize(cc.size(richlabel:getCustomSize().width,height))
--- 				local element=ccui.RichElementCustomNode:create(index,display.COLOR_WHITE,255,ccnode)
--- 				richlabel:pushBackElement(element)
--- 				index=index+1
--- 			elseif pNode:getTagType()==TAG_TYPE.TAG_PIC then
--- 				local picfile = cc.HtmlParser:getAttributeStringValue(pNode,"src")
--- 				if picfile and tostring(picfile)~="" then
--- 					local sprite=cc.Sprite:create()
--- 					sprite:setSpriteFrame(tostring(picfile))
--- 					if sprite then
--- 						local element=ccui.RichElementCustomNode:create(index,cc.c3b(255,255,255),0,sprite)
--- 						richlabel:pushBackElement(element)
--- 						index=index+1
--- 					end
--- 				end
--- 			elseif pNode:getTagType()==TAG_TYPE.TAG_P then
+					local label = util.newUILabel({
+						text = labelStr,
+						fontSize = Tsize[#Tsize]+2,
+						anchor = cc.p(1,0.5),
+						color = cc.c3b(0,255,0),
+						position = cc.p(320,110),
+					})
+					label:setLocalZOrder(10)
+					label:setTouchEnabled(true)
+--					label.user_data="event:local_itemname_"..tempStr
+                    label.user_data="event:itemshow_"..tempStr
+					label:addClickEventListener(linktouch)
+					local element=ccui.RichElementCustomNode:create(index,Const.COLOR_GREEN_1_C3B,255,label)
+					richlabel:pushBackElement(element)
+					index=index+1
+				end
+			elseif pNode:getTagType()==TAG_TYPE.TAG_A then
+				local link = ""
+                local islabel = false
+                local ttcolor = cc.c3b(255,172,8)
+				if parser:getHtmlNodeCount() > 0 then
+					link = cc.HtmlParser:getAttributeStringValue(pNode,"href")
+                    islabel = (checkint(cc.HtmlParser:getAttributeStringValue(pNode,"islabel")) == 1)
+                    local ttempcolor = cc.HtmlParser:getAttributeStringValue(pNode,"color")
+                    if ttempcolor then
+                        ttcolor = game.getColor(ttempcolor)
+                    else
+                        ttcolor = Const.COLOR_GREEN_1_C3B
+                    end
+				end
+				tag_a=true
+				local ccnode = parser:getHtmlNode(i+1)
+				if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
+					local tempStr=ccnode:getText()
+                    tempStr=game.clearHtmlText(tempStr)
+--                    if islabel then
+                        local label = util.newUILabel({
+                            text = tempStr,
+                            font = Const.DEFAULT_FONT_NAME,
+                            fontSize = Tsize[#Tsize],
+                            color = ttcolor,
+                        })
+                        label:setTouchEnabled(true)
+                        label.user_data=link
+                        label:addClickEventListener(function (pSender)
+                            util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
+                        end)
+                        local element=ccui.RichElementCustomNode:create(index,ttcolor,255,label)
+                        richlabel:pushBackElement(element)
+					index=index+1
+				end
+			end
 
--- 				brCount = brCount + 1
--- 				local height = 0
--- 				if brCount >1 then
--- 					height = 20
--- 				end
--- 				tag_a=true
--- 				local ccnode = parser:getHtmlNode(i+1)
--- 				if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
--- 					local function linktouch(pSender)
--- 						util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
--- 					end
--- 					local tempStr=ccnode:getText()
---                     --[[
--- 					local item_num = ""
--- 					local pos = string.find(tempStr,"##")
--- 					if pos > 0 then
--- 						tempStr = string.sub(tempStr,pos+string.len("##"))
--- 						pos = string.find(tempStr,"##")
--- 						if pos > 0 then
--- 							item_num = string.sub(tempStr,pos+string.len("##"))
--- 							tempStr = string.sub(tempStr,0,pos-1)
--- 						end
--- 					end
--- 					--]]
---                     local labelStr = tempStr
---                     local attr = string.split(tempStr, ",")
---                     if attr and attr[2] then
---                         local itemdef = NetClient:getItemDefByID(checkint(attr[2]))
---                         if itemdef then
---                             labelStr = "["..itemdef.mName.."]"
---                         end
---                     end
-
--- 					local label = util.newUILabel({
--- 						text = labelStr,
--- 						fontSize = Tsize[#Tsize]+2,
--- 						anchor = cc.p(1,0.5),
--- 						color = cc.c3b(0,255,0),
--- 						position = cc.p(320,110),
--- 					})
--- 					label:setLocalZOrder(10)
--- 					label:setTouchEnabled(true)
--- --					label.user_data="event:local_itemname_"..tempStr
---                     label.user_data="event:itemshow_"..tempStr
--- 					label:addClickEventListener(linktouch)
--- 					local element=ccui.RichElementCustomNode:create(index,Const.COLOR_GREEN_1_C3B,255,label)
--- 					richlabel:pushBackElement(element)
--- 					index=index+1
--- 				end
--- 			elseif pNode:getTagType()==TAG_TYPE.TAG_A then
--- 				local link = ""
---                 local islabel = false
---                 local ttcolor = cc.c3b(255,172,8)
--- 				if parser:getHtmlNodeCount() > 0 then
--- 					link = cc.HtmlParser:getAttributeStringValue(pNode,"href")
---                     islabel = (checkint(cc.HtmlParser:getAttributeStringValue(pNode,"islabel")) == 1)
---                     local ttempcolor = cc.HtmlParser:getAttributeStringValue(pNode,"color")
---                     if ttempcolor then
---                         ttcolor = game.getColor(ttempcolor)
---                     else
---                         ttcolor = Const.COLOR_GREEN_1_C3B
---                     end
--- 				end
--- 				tag_a=true
--- 				local ccnode = parser:getHtmlNode(i+1)
--- 				if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
--- 					local tempStr=ccnode:getText()
---                     tempStr=game.clearHtmlText(tempStr)
--- --                    if islabel then
---                         local label = util.newUILabel({
---                             text = tempStr,
---                             font = Const.DEFAULT_FONT_NAME,
---                             fontSize = Tsize[#Tsize],
---                             color = ttcolor,
---                         })
---                         label:setTouchEnabled(true)
---                         label.user_data=link
---                         label:addClickEventListener(function (pSender)
---                             util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
---                         end)
---                         local element=ccui.RichElementCustomNode:create(index,ttcolor,255,label)
---                         richlabel:pushBackElement(element)
--- --                    else
--- --                        local button = ccui.Button:create()
--- --                        button:loadTextures("new_com_btn.png","","",UI_TEX_TYPE_PLIST)
--- --                        button:setScale9Enabled(true)
--- --                        button:setTitleText(tempStr)
--- --                        button:setTitleFontSize(Tsize[#Tsize]+1)
--- --                        button:setTitleColor(ttcolor)
--- --                        button:setTitleFontName(Const.DEFAULT_BTN_FONT_NAME)
--- --
--- --                        local text_size= button:getTitleRenderer():getContentSize()
--- --                        button:setContentSize(cc.size(text_size.width+50,text_size.height+20))
--- --                        button.user_data=link
--- --                        button:setTouchEnabled(true)
--- --                        button:addClickEventListener(function (pSender)
--- --                            util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
--- --                        end)
--- --                        local element=ccui.RichElementCustomNode:create(index,cc.c3b(255,255,0),255,button)
--- --                        richlabel:pushBackElement(element)
--- --                        if tempStr == "ui_accept_task" or tempStr == "ui_done_task" then
--- --                            local param = {}
--- --                            param[1] = tempStr
--- --                            param[2] = label
--- --                            button:setVisible(false)
--- --                            button:setTouchEnabled(false)
--- --                            richlabel.param = param
--- --                        end
--- --                    end
-
-
--- 					index=index+1
--- 				end
--- 			end
-
--- 		elseif pNode:getType()==NODE_TYPE.NODE_CONTENT then
--- 			if tag_a then 
--- 				tag_a=false
--- 			else
--- 				local text=pNode:getText()
--- 				if text then
--- 					local tempStr=game.clearHtmlText(text)
--- 					local tcolor=Dcolor
--- 					if tonumber(Tcolor[#Tcolor]) then tcolor=tonumber(Tcolor[#Tcolor]) end
--- 					local element=ccui.RichElementText:create(index,game.getColor(tcolor),255,tempStr,Const.DEFAULT_FONT_NAME,Tsize[#Tsize])
--- 					richlabel:pushBackElement(element)
--- 					index=index+1
--- 				end
--- 			end
--- 		elseif pNode:getType()==NODE_TYPE.NODE_END_TAG then
--- 			if pNode:getTagName()=="font" then
--- 				table.remove(Tcolor,#Tcolor)
--- 				table.remove(Tsize,#Tsize)
--- 			end
--- 		end
+		elseif pNode:getType()==NODE_TYPE.NODE_CONTENT then
+			if tag_a then 
+				tag_a=false
+			else
+				local text=pNode:getText()
+				if text then
+					local tempStr=game.clearHtmlText(text)
+					local tcolor=Dcolor
+					if tonumber(Tcolor[#Tcolor]) then tcolor=tonumber(Tcolor[#Tcolor]) end
+					local element=ccui.RichElementText:create(index,game.getColor(tcolor),255,tempStr,Const.DEFAULT_FONT_NAME,Tsize[#Tsize])
+					richlabel:pushBackElement(element)
+					index=index+1
+				end
+			end
+		elseif pNode:getType()==NODE_TYPE.NODE_END_TAG then
+			if pNode:getTagName()=="font" then
+				table.remove(Tcolor,#Tcolor)
+				table.remove(Tsize,#Tsize)
+			end
+		end
 
 	end
-	-- richlabel.setString(htmltext)
 	richlabel:formatText()
 	richlabel:setPosition(cc.p(0,richlabel:getRealHeight()))
     parser:cleanHtmlNodes()
+end
+function util.setRichLabel11(richlabel,htmltext,parent,tsize,decolor)
+--    C++没有这个方法 暂时屏蔽
+--	richlabel:removeAllElement()
+
+	if not parent then
+		parent = ""
+	end
+
+	-- htmltext,n=string.gsub(htmltext,"\t"," ")
+	-- htmltext,n=string.gsub(htmltext,"\r","")
+	-- htmltext,n=string.gsub(htmltext,"%c","<br>")
+
+	-- local parser=cc.HtmlParser:new()
+	-- tolua.takeownership(parser)
+
+	-- parser:parseHtml(htmltext)
+
+	local msize=20
+	if tsize then
+		msize=tsize
+    end
+    local mcolor="0xffffff"
+    if decolor then
+        mcolor=decolor
+    end
+
+	local brCount = 0
+	local tag_a=false
+	local index=0
+	local Dcolor=mcolor
+	local Dsize=msize
+	local Tcolor = {[1]=mcolor}
+	local Tsize = {[1]=msize}
+	local html_ = htmlParse.parsestr(htmltext)
+	print("htmltext == ",htmltext)
+
+	-- local  htmlIndex = 1
+	-- local count = #html_
+	-- if #html_ > 1 then
+	-- 	print("count == ",count)
+	-- 		for i=1, count do
+	-- 			local curIndex = htmlIndex
+	-- 			local nextIndex = htmlIndex+1
+	-- 			local pNode = html_[curIndex]
+	-- 			print("文本 == ",curIndex)
+	-- 			dump(pNode)
+	-- 			if nextIndex>count then
+
+	-- 			else
+	-- 				  print("type == ",type(pNode))
+	-- 				  if type(pNode)=="table"  then
+
+	-- 				  else
+	-- 						local function linktouch(pSender)
+	-- 							util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
+	-- 						end
+	-- 						local tempStr=pNode
+	-- 	                    local labelStr = tempStr
+	-- 	                    local attr = string.split(tempStr, ",")
+	-- 	                    if attr and attr[2] then
+	-- 	                        local itemdef = NetClient:getItemDefByID(checkint(attr[2]))
+	-- 	                        if itemdef then
+	-- 	                            labelStr = "["..itemdef.mName.."]"
+	-- 	                        end
+	-- 	                    end
+
+	-- 						local label = util.newUILabel({
+	-- 							text = labelStr,
+	-- 							fontSize = Tsize[#Tsize]+2,
+	-- 							anchor = cc.p(1,0.5),
+	-- 							color = cc.c3b(0,255,0),
+	-- 							position = cc.p(320,110),
+	-- 						})
+	-- 						label:setLocalZOrder(10)
+	-- 						-- label:setTouchEnabled(true)
+	-- 	--					label.user_data="event:local_itemname_"..tempStr
+	-- 	                    label.user_data="event:itemshow_"..tempStr
+	-- 						-- label:addClickEventListener(linktouch)
+	-- 						local element=ccui.RichElementCustomNode:create(index,Const.COLOR_GREEN_1_C3B,255,label)
+	-- 						richlabel:pushBackElement(element)
+	-- 						index=index+1
+	-- 				  end
+
+	-- 				local pNodeArr = html_[nextIndex]
+	-- 				htmlIndex = nextIndex+1
+	-- 				print("属性 = =")
+	-- 				dump(pNodeArr)
+	-- 			end
+	
+	-- 		end
+	-- else
+	-- 						local function linktouch(pSender)
+	-- 							util.touchlink(pSender,ccui.TouchEventType.ended,parent,richlabel)
+	-- 						end
+	-- 						local tempStr=htmltext
+	-- 	                    local labelStr = tempStr
+	-- 	                    local attr = string.split(tempStr, ",")
+	-- 	                    if attr and attr[2] then
+	-- 	                        local itemdef = NetClient:getItemDefByID(checkint(attr[2]))
+	-- 	                        if itemdef then
+	-- 	                            labelStr = "["..itemdef.mName.."]"
+	-- 	                        end
+	-- 	                    end
+
+	-- 						local label = util.newUILabel({
+	-- 							text = labelStr,
+	-- 							fontSize = Tsize[#Tsize]+2,
+	-- 							anchor = cc.p(1,0.5),
+	-- 							color = cc.c3b(0,255,0),
+	-- 							position = cc.p(320,110),
+	-- 						})
+	-- 						label:setLocalZOrder(10)
+	-- 						label:setTouchEnabled(true)
+	-- 	--					label.user_data="event:local_itemname_"..tempStr
+	-- 	                    label.user_data="event:itemshow_"..tempStr
+	-- 						label:addClickEventListener(linktouch)
+	-- 						local element=ccui.RichElementCustomNode:create(index,Const.COLOR_GREEN_1_C3B,255,label)
+	-- 						richlabel:pushBackElement(element)
+	-- 				-- index=index+1
+			
+	-- end
+	dump(html_)
+		-- if ccnode:getType() == NODE_TYPE.NODE_CONTENT then
+		
+
+	richlabel:formatText()
+	richlabel:setPosition(cc.p(0,richlabel:getRealHeight()))
+    -- parser:cleanHtmlNodes()
 end
 
 function util.touchlink(pSender,touch_type,parent,richlabel)

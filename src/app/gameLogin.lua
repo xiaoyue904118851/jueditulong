@@ -297,6 +297,7 @@ function gameLogin.LoginGame()
             "&token="..uid.."&server_id="..gameLogin._current_server_info.server_id ..
             "&device=".."unknown".."&platform=".. "test" .. "&system=".. "android"--device.platform
 
+    -- url = "http://47.94.37.110/legend/sjloginsuper.php?sign=&uin=0_0e3dc485995f0c661235546c4b8c5c73@_()&sign=0_0e3dc485995f0c661235546c4b8c5c73@_()&token=0_0e3dc485995f0c661235546c4b8c5c73@_()&server_id=1001&device=unknown&platform=test&system=android"
     print("gameLog.LoinginGame==>> url", url)
     local xhr = cc.XMLHttpRequest:new()
     xhr.responseType = cc.XMLHTTPREQUEST_RESPONSE_JSON

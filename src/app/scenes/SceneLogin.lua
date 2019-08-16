@@ -31,7 +31,7 @@ function SceneLogin:onCreate()
        
             else
                 if device.platform == "windows" then
-                    gameLogin.setLoginAccount("123")
+                    gameLogin.setLoginAccount("111")
                     gameLogin.LoginGame()
                 else
                     PlatformTool.login()

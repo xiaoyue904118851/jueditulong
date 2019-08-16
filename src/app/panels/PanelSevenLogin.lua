@@ -134,7 +134,7 @@ function PanelSevenLogin.freshAllPanel()
 end
 
 function PanelSevenLogin.updateLoginCnt()
-    var.widget:getWidgetByName("Text_denglu_tip"):setString(tag)
+    -- var.widget:getWidgetByName("Text_denglu_tip"):setString(tag)
     local msg = "当前累计登陆"..game.make_str_with_color(Const.COLOR_GREEN_1_STR,NetClient.mSevenLoginInfo.loginCnt).."天"
     local width = var.widget:getContentSize().width/2
     local richLabel, richWidget = util.newRichLabel(cc.size(width, 0), 3)
