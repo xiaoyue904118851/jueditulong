@@ -6,11 +6,11 @@
 --
 local ACTIONSET_NAME = "privilege"
 local CARD_CFG = {
-    {"白银特权","白银","baiyin_ico.png","消耗3088元宝购买30天白银特权？", "白银特权续费30天，需要3088元宝"},
-    {"黄金特权","黄金","huangjin_ico.png","消耗3088元宝购买30天黄金特权？", "黄金特权续费30天，需要6888元宝"},
-    {"钻石特权","钻石","zuanshi_ico.png","消耗3088元宝购买30天钻石特权？", "钻石特权续费30天，需要16888元宝"},
+    {"白银特权","白银","baiyin_ico.png","消耗8888元宝购买7天白银特权？", "白银特权续费7天，需要8888元宝"},
+    {"黄金特权","黄金","huangjin_ico.png","消耗18888元宝购买7天黄金特权？", "黄金特权续费7天，需要18888元宝"},
+    {"钻石特权","钻石","zuanshi_ico.png","消耗3088元宝购买7天钻石特权？", "钻石特权续费7天，需要88888元宝"},
 }
-local TUANGOU_ALERT_MSG = {"团购后3种特权各增加30天","需要花费%s元宝"}
+local TUANGOU_ALERT_MSG = {"团购后3种特权各增加7天","需要花费%s元宝"}
 
 local DESC_WIDGET_NAME = "tequandesc"
 local PanelPrivilegeCard = {}

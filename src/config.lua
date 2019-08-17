@@ -28,21 +28,21 @@ CC_DESIGN_RESOLUTION = {
 
 GAME_TAG = "Debug"
 
-TEST_ACCOUNT="333"
+TEST_ACCOUNT=""
 --
 CHARGE_CFG = {
-    { rmb = 10, num = 1000, icon = 0},
-    { rmb = 50, num = 5000, icon = 1},
-    { rmb = 100, num = 10000, icon = 2},
-    { rmb = 500, num = 50000, icon = 3},
-    { rmb = 1000, num = 100000, icon = 4},
-    { rmb = 2000, num = 200000, icon = 5},
-    { rmb = 5000, num = 500000, icon = 5},
-    { rmb = 10000, num = 1000000, icon = 5},
+    { rmb = 10, num = 5000, icon = 0},
+    { rmb = 50, num = 25000, icon = 1},
+    { rmb = 100, num = 50000, icon = 2},
+    { rmb = 500, num = 250000, icon = 3},
+    { rmb = 1000, num = 500000, icon = 4},
+    { rmb = 2000, num = 1000000, icon = 5},
+    --{ rmb = 5000, num = 500000, icon = 5},
+    --{ rmb = 10000, num = 1000000, icon = 5},
     --{ rmb = 20000, num = 2000000, icon = 5},
 }
 if GAME_TAG == "Release" then
     CC_SHOW_FPS = false
 end
 CHANNEL_ID = 1
-CENTER_URL = "http://120.27.229.74/"
+CENTER_URL =  "http://47.94.37.110/"
